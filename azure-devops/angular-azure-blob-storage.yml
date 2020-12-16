@@ -1,0 +1,82 @@
+trigger:
+  branches:
+    include:
+    - release/*
+  paths:
+    exclude:
+    - infrastructure/*
+    - pipelines/*
+
+variables:
+  buildPlatform: "Any CPU"
+  buildConfiguration: "Release"
+  azureSubscription: "<subscription>"
+  blobStorageAccountName: "<accont-name>"
+  blobContainerName: "<container-name>"
+
+
+pool:
+  name: Azure Pipelines
+  demands: npm
+  vmImage: windows-2019
+
+stages:
+- stage: Build
+  jobs:
+    - job: Build
+      steps:
+        - task: Npm@1
+          displayName: 'npm install'
+          inputs:
+            command: install
+
+        - task: Npm@1
+          displayName: 'npm run build'
+          inputs:
+            command: custom
+            customCommand: 'run build-prod'
+        
+        - task: Npm@1
+          displayName: 'npm run test'
+          inputs:
+            command: custom
+            customCommand: 'run test'
+        
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publish Artifact: dist'
+          inputs:
+            targetPath: dist
+            artifact: dist
+  
+- stage: Deploy
+  displayName: 'Deployment'
+  dependsOn: ['Build']
+  jobs:
+    - deployment: 'Deployment'
+      displayName: 'Deploy'
+      environment: 'dev'
+      workspace:
+        clean: all
+      strategy:
+       runOnce:
+         deploy:
+           steps:
+
+           - task: AzureCLI@2
+             displayName: Clean Blob Storage Container
+             inputs:
+               azureSubscription: ${{ variables.azureSubscription }}
+               scriptType: ps
+               scriptLocation: inlineScript
+               inlineScript: |
+                  az storage blob delete-batch --account-name ${{ variables.blobStorageAccountName }}  --source '${{ variables.blobContainerName }}'
+                  
+           - task: AzureFileCopy@3
+             displayName: 'AzureBlob File Copy'
+             inputs:
+               SourcePath: '$(Pipeline.Workspace)\dist'
+               CopyFilesInParallel: true
+               azureSubscription: ${{ variables.azureSubscription }}
+               Destination: AzureBlob
+               storage: ${{ variables.blobStorageAccountName }}
+               ContainerName: ${{ variables.blobContainerName }}
