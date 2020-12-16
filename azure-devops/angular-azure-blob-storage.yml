@@ -31,16 +31,22 @@ stages:
             command: install
 
         - task: Npm@1
-          displayName: 'npm run build'
+          displayName: 'npm run lint'
           inputs:
             command: custom
-            customCommand: 'run build-prod'
-        
+            customCommand: 'run lint'
+            
         - task: Npm@1
           displayName: 'npm run test'
           inputs:
             command: custom
             customCommand: 'run test'
+            
+        - task: Npm@1
+          displayName: 'npm run build'
+          inputs:
+            command: custom
+            customCommand: 'run build-prod'
         
         - task: PublishPipelineArtifact@1
           displayName: 'Publish Artifact: dist'
