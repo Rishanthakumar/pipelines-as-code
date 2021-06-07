@@ -6,7 +6,7 @@ YAML pipelines used for build and deploy apps.
 
 - [Build and deploy Angular app to Azure Blob Storage Static Hosting](azure-devops/angular-azure-blob-storage.yml)
 - [Build and deploy .Net Core api to Azure App Service](azure-devops/dotnet-core-azure-appservice.yml)
-- [Build and push package to internal Nuget feed using dotnet core cli](azure-devops/dotnet-core-nuget-publish-internal.yml)
+- [Pack and push package to internal nuget feed using .Net Core cli](azure-devops/dotnet-core-nuget-publish-internal.yml)
 
 ## GitHub Actions
 
