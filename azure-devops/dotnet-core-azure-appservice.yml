@@ -29,7 +29,7 @@ stages:
           displayName: Build
           inputs:
             projects: '**/DotNetCore.csproj'
-            arguments: '--configuration $(BuildConfiguration)'
+            arguments: '--configuration $(buildConfiguration)'
 
         - task: DotNetCoreCLI@2
           condition: and(succeeded(), eq(variables.isMaster, false)) 
@@ -37,7 +37,7 @@ stages:
           inputs:
             command: test
             projects: '**/*[Tt]ests/*.csproj'
-            arguments:  '--configuration $(BuildConfiguration) --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover'
+            arguments:  '--configuration $(buildConfiguration) --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover'
             nobuild: true
             verbosityPack: '-'
             
@@ -72,7 +72,7 @@ stages:
        - task: PublishBuildArtifacts@1
          displayName: 'Publish Artifact'
          inputs:
-          PathtoPublish: '$(build.artifactstagingdirectory)'
+          PathtoPublish: '$(build.ArtifactStagingDirectory)'
         
                 
 - stage: Deploy
@@ -99,4 +99,4 @@ stages:
                 azureSubscription: ${{ variables.azureSubscription }}
                 appType: webApp
                 appName: ${{ variables.appName }}
-                package: $(build.artifactstagingdirectory)/**/*.zip 
+                package: $(build.ArtifactStagingDirectory)/**/*.zip 
