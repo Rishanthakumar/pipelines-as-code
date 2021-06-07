@@ -1,0 +1,45 @@
+trigger:
+  -
+
+# name will be used for auto versioning (https://stackoverflow.com/a/56111209/6332983)
+name: $(majorMinorVersion).$(semanticVersion)
+
+variables:
+  - name: buildConfiguration
+    value: "Release"
+  - name: majorMinorVersion
+    value: 1.0
+  - name: semanticVersion
+    value: $[counter(variables['majorMinorVersion'], 0)]
+
+pool: 
+  name: Azure Pipelines
+  vmImage: 'windows-latest'
+
+steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Build'
+    inputs:
+      command: build
+      arguments: '--configuration $(buildConfiguration)'
+      projects: '**/*.csproj' # or you can give the specific project  like '**/SampleProject.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Pack'
+    inputs:
+      command: pack
+      packagesToPack: '**/*csproj'
+      versioningScheme: byBuildNumber
+  
+  - task: DotNetCoreCLI@2
+    displayName: 'Nuget Push'
+    inputs:
+      command: push
+      packagesToPack: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+      feedsToUse: select
+      nuGetFeedType: internal
+      publishVstsFeed: 'feedName' # for global feeds just the feed name, for project scoped feeds: 'projectName/feedName'
+
+
+# dot net core cli task Microsoft Documentation: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/dotnet-core-cli?view=azure-devops
+
