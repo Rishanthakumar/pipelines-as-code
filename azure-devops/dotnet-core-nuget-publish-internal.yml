@@ -16,19 +16,12 @@ pool:
   name: Azure Pipelines
   vmImage: 'windows-latest'
 
-steps:
-  - task: DotNetCoreCLI@2
-    displayName: 'Build'
-    inputs:
-      command: build
-      arguments: '--configuration $(buildConfiguration)'
-      projects: '**/*.csproj' # or you can give the specific project  like '**/SampleProject.csproj'
-
   - task: DotNetCoreCLI@2
     displayName: 'Pack'
     inputs:
       command: pack
-      packagesToPack: '**/*.csproj'
+      arguments: '--configuration $(buildConfiguration)'
+      packagesToPack: '**/*.csproj'  # or you can give the specific project  like '**/SampleProject.csproj'
       versioningScheme: byBuildNumber
   
   - task: DotNetCoreCLI@2
